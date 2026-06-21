@@ -1,0 +1,16 @@
+[project]
+name = "kis-report-data-etl"
+version = "0.1.0"
+description = "데이터 수집(api_ingest) → ETL → 지표계산(compute) 파이프라인"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "requests>=2.31",     # KIS OpenAPI 호출(api_ingest)
+    "python-dotenv>=1.0", # kis_config 개발 폴백 .env
+    "keyring>=24.0",      # kis_config(자격정보) — api_ingest 가 ../app/kis_config 사용
+    "yfinance>=0.2",      # market: 현재가·재무·과거가·분할
+    "numpy>=1.26",        # compute 스타일 회귀
+    "pandas>=2.0",        # yfinance 의존
+]
+
+[tool.uv]
+package = false

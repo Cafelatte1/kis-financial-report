@@ -1,0 +1,55 @@
+# === 공통 ===
+__pycache__/
+*.pyc
+.DS_Store
+
+# === 자격정보/시크릿 (절대 커밋 금지) ===
+**/.env
+**/.data
+**/jwt.txt
+**/.token.json
+**/service-account*.json
+**/*-sa.json
+**/gcp-key*.json
+
+# === 산출물/로그 (개인정보 포함) ===
+**/output*.csv
+**/*.log
+**/*.db
+
+# === CAPTCHA 캡처물 (HTML 덤프에 계좌정보 포함 가능) ===
+# 덤프는 모두 captcha/ 폴더에만 생성됨. (전역 *.html 금지 → create-report/index.html 등 소스가 빠지므로 금지)
+**/captcha/
+
+# === create-report (개인 금융데이터·빌드·스크린샷) ===
+**/node_modules/
+**/dist/
+create-report/src/data/*.json
+create-report/public/data/*.json
+create-report/_shots/
+
+# === app 빌드 산출물 (PyInstaller) ===
+app/build/
+app/dist/
+**/*.exe
+**/포트폴리오리포트_*.pdf
+**/*리포트*.pdf
+
+# === captcha-recognizer (ML 학습) ===
+**/.venv/
+**/checkpoints/
+**/lightning_logs/
+**/*.pt
+**/*.ckpt
+# raw(zip 추출)·splits(folds.csv) 모두 생성물 — 인라인 주석은 git 미지원이라 별도 줄로
+captcha-recognizer/data/
+# 원본 캡차 데이터셋(바이너리)
+captcha-recognizer/sample.zip
+# OpenVINO IR(변환 산출물)
+captcha-recognizer/openvino/
+
+# === data-etl mock 테스트 산출물 ===
+# mock_test.py 격리 실행물(throwaway)
+data-etl/_mock/
+# api_ingest 격리 검증물(throwaway)
+data-etl/_apitest/
