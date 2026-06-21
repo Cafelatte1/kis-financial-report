@@ -8,7 +8,7 @@
 cd data-etl
 uv run python api_ingest.py   # 1. KIS OpenAPI → raw 테이블(거래·잔고·실현손익)
 uv run python etl.py          # 2. raw → 파생 테이블(trades/holdings/realized/…)
-uv run python compute.py      # 3. 파생 + yfinance → portfolio.json / trades.json
+uv run python compute.py      # 3. 파생 + yfinance(지표) + GCP백엔드(재무제표) → portfolio.json / trades.json / financials.json
 ```
 > 자격정보는 환경변수(`KIS_APP_KEY`/`KIS_SECRET_KEY`/`KIS_ACC`), 조회기간은 `KIS_FROM_DATE`/`KIS_TO_DATE` 로 주입(앱이 OS 자격증명 저장소에서 읽어 전달). 출력 폴더는 `KIS_DATA_DIR`(미설정 시 로컬).
 
@@ -28,10 +28,14 @@ uv run python compute.py      # 3. 파생 + yfinance → portfolio.json / trades
 - **etl 경로**: raw 잔고/실현손익이 있으면 **브로커 경로**(holdings=`raw_holdings`, realized=`raw_realized` + `trades`에서 청산기간·횟수 보강). 없으면 체결내역 기반 **평균단가 엔진**으로 폴백.
 - **TWR 과거 수량(compute)**: yfinance 가격이 분할 소급조정(`auto_adjust`)되므로, 과거 보유수량도 **현재주식수 기준으로 환산**한다 — 각 거래수량에 *그 거래일 이후* 분할비율을 곱하고, `현재잔고 − Σ(분할조정 전체거래)` 를 오프셋으로 더한다(`market.get_splits` 캐시). 예: NFLX ×10, NEE ×4.
 
+## 재무 데이터 — 지표 vs 재무제표 (저장 위치 분리)
+- **재무지표(ratios: PER·PBR·β·ROE·배당 등)** → `market.get_financials` 가 yfinance `.info` 에서 받아 **로컬 `portfolio.db`(`fin` 테이블)** 캐시. `portfolio.json` 의 보유종목에 포함.
+- **재무제표(income/balance/cashflow, annual+quarterly)** → `financials_api.get_statements` 가 **GCP financials-backend(Cloud Run)** 호출로 받아 **별도 `financials.json`** 으로 출력. 백엔드가 Firestore 에 기간별 병합·누적 저장하므로 호출이 곧 N년치 아카이빙(yfinance 가 떨군 과거 기간 보존). KR/US 만 커버.
+
 ## 통화
 - 금액은 native 저장(해외=USD, KR=KRW). **USD 베이스 환산·전 지표 계산은 `compute.py`** 가 담당(거래시점 환율 yfinance 캐시).
 
 ## 파일
-`api_ingest.py`(KIS OpenAPI 수집), `db.py`(연결·스키마 단일 권위), `etl.py`(raw→파생), `transform.py`(파싱·평균단가 엔진), `market.py`(yfinance 단일 진입점+캐시), `compute.py`(전 지표→JSON), `schema.sql`, `config.py`.
+`api_ingest.py`(KIS OpenAPI 수집), `db.py`(연결·스키마 단일 권위), `etl.py`(raw→파생), `transform.py`(파싱·평균단가 엔진), `market.py`(yfinance 단일 진입점+캐시), `financials_api.py`(재무제표 GCP 백엔드 호출), `compute.py`(전 지표→JSON), `schema.sql`, `config.py`.
 
 > `portfolio.db` 는 gitignore(개인 금융정보).

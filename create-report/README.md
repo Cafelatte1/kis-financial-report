@@ -5,21 +5,26 @@ Vite + React + TS + Tailwind + Recharts. **계산은 하지 않고 표시만** �
 
 ## 데이터 흐름
 ```
-data-etl/compute.py ─(portfolio.db + yfinance)→ {portfolio,trades}.json → React 렌더(16:9)
+data-etl/compute.py ─(portfolio.db + yfinance + GCP재무제표백엔드)→
+   {portfolio,trades}.json + financials.json → React 렌더(16:9)
 ```
 > JSON 은 앱 실행 시 `%APPDATA%\KIS-Report\report\` 에, 개발 시 `public/data/` 에 생성된다.
+> `financials.json`(재무제표)은 용량이 커서 별도 파일로 분리해 **재무제표 탭에서 lazy fetch** 한다.
 
 ## 실행
 ```bash
 npm ci && npm run dev           # (build / preview) — JSON 은 data-etl/compute.py 가 먼저 생성
 ```
 
-## 구조 (3섹션, ← → 또는 하단 탭)
+## 구조 (섹션 세로 스택, 상단 탭으로 이동)
 ### 0. 요약 (Overview)
 총 평가액·**총 손익(실현+미실현)**·전기간 IRR·누적 TWR(vs S&P500 초과%p) + **한 줄 평가**(자동) + 미니 누적곡선 + **수익 주역(종목 기여도)**.
 
 ### A. 포트폴리오 분석 (open = 현재 보유)
 보유표(수량·평단·현재가·평가액·미실현·**β·PER·섹터**) + **포폴 가중평균**(β/PER/PBR/배당) + **섹터 틸트**(포폴 vs S&P500 오버/언더).
+
+### A2. 재무제표 (재무제표 탭)
+보유종목별 **손익계산서·재무상태표·현금흐름표**(연간/분기 토글). `financials.json` lazy fetch, 데이터 출처는 GCP 재무제표 백엔드(Firestore 누적). KR/US 만.
 
 ### B. 운용성과 분석 (open+closed = 계좌 전체) — 상단 3개 서브탭
 - **수익률 비교**: 전기간 **IRR**·누적 **TWR**(주별) vs **S&P500·ACWI**, **지수/금액 토글**(금액=보유 평가액 $ 추이) + 연도별 막대 + **연도별 승패**.

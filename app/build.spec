@@ -13,6 +13,7 @@ datas = [
     (os.path.join(ROOT, "data-etl", "etl.py"), "data-etl"),
     (os.path.join(ROOT, "data-etl", "transform.py"), "data-etl"),
     (os.path.join(ROOT, "data-etl", "market.py"), "data-etl"),
+    (os.path.join(ROOT, "data-etl", "financials_api.py"), "data-etl"),   # 재무제표 GCP 백엔드 호출
     (os.path.join(ROOT, "data-etl", "compute.py"), "data-etl"),
     (os.path.join(ROOT, "data-etl", "schema.sql"), "data-etl"),
     (os.path.join(ROOT, "DISCLAIMER.md"), "."),

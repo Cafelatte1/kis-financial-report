@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import MonthlyOverview from "./pages/MonthlyOverview";
 import Overview from "./pages/Overview";
 import PortfolioSection from "./pages/PortfolioSection";
+import FinancialStatements from "./pages/FinancialStatements";
 import PerformanceSection from "./pages/PerformanceSection";
 import type { Report } from "./types";
 
@@ -94,6 +95,7 @@ export default function App() {
 const SECTIONS = [
   { id: "overview", name: "요약", render: (r: Report) => <Overview r={r} /> },
   { id: "portfolio", name: "포트폴리오 분석", render: (r: Report) => <PortfolioSection r={r} /> },
+  { id: "financials", name: "재무제표", render: () => <FinancialStatements /> },
   { id: "monthly", name: "월별 개요", render: (r: Report) => <MonthlyOverview r={r} /> },
   { id: "performance", name: "운용성과 분석", render: (r: Report) => <PerformanceSection r={r} /> },
 ];

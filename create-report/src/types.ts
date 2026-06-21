@@ -65,6 +65,18 @@ export interface Risk {
   max_up_streak: number; max_down_streak: number;
 }
 
+// 재무제표(financials.json) — GCP 백엔드 경유 수집. period(ISO) -> {라인항목: 값}
+export type Statement = Record<string, Record<string, number | string>>;
+export interface StatementSet {
+  ticker?: string; fetched_at?: string;
+  income: Statement; balance: Statement; cashflow: Statement;
+}
+export interface SymbolFinancials {
+  name: string; country: string;
+  annual: StatementSet | null; quarterly: StatementSet | null;
+}
+export type Financials = Record<string, SymbolFinancials>;
+
 export interface Report {
   asof: string; base_ccy: string; fx: Record<string, number>;
   kpi: Kpi; holdings: Holding[]; weighted: Weighted; fin_weighted: Record<string, number | null>; sectors: Alloc[];
