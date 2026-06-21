@@ -45,9 +45,7 @@ cd app && uv run pyinstaller build.spec --noconfirm
 | `app/` | GUI 오케스트레이터(Tkinter) + 자격정보(`kis_config`) + 빌드(spec) |
 | `data-etl/` | **KIS OpenAPI 수집**(`api_ingest`) → 단일 DB(`portfolio.db`) 적재(`db`)·정규화(`etl`)·yfinance 캐시(`market`)·전 지표 계산(`compute`) → `portfolio.json` |
 | `create-report/` | React 웹 대시보드 (계산 없음, `portfolio.json` 표시 전용 — 갱신 제어 없음) |
-| `financials-backend/` | (Cloud Run) 재무제표 yearly/quarterly Firestore 캐시 — yfinance read-through |
 | `data-pipeline/` | **(은퇴)** 구 Edge 스크래퍼 — KIS OpenAPI로 대체됨. 코드 보존용 |
-| `captcha-recognizer/` | (은퇴) 구 스크래퍼용 캡차 OCR 모델 — 현재 미사용 |
 
 단일 `portfolio.db` = 입력(raw_domestic/raw_holdings/raw_realized) + 파생(trades/holdings/realized/…) + yfinance 캐시(prices/fin/hist_*/splits).
 데이터·산출물·자격정보는 모두 로컬(또는 `%APPDATA%`)에만 — 레포엔 코드만.

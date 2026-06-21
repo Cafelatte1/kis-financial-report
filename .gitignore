@@ -35,18 +35,13 @@ app/dist/
 **/포트폴리오리포트_*.pdf
 **/*리포트*.pdf
 
-# === captcha-recognizer (ML 학습) ===
+# === 파이썬 가상환경(전 폴더 공통) ===
 **/.venv/
-**/checkpoints/
-**/lightning_logs/
-**/*.pt
-**/*.ckpt
-# raw(zip 추출)·splits(folds.csv) 모두 생성물 — 인라인 주석은 git 미지원이라 별도 줄로
-captcha-recognizer/data/
-# 원본 캡차 데이터셋(바이너리)
-captcha-recognizer/sample.zip
-# OpenVINO IR(변환 산출물)
-captcha-recognizer/openvino/
+
+# === repo 미포함 폴더 (로컬에만 보관) ===
+# captcha-recognizer: 구 스크래퍼용 ML(은퇴). financials-backend: 로컬 GCP deploy 용도
+captcha-recognizer/
+financials-backend/
 
 # === data-etl mock 테스트 산출물 ===
 # mock_test.py 격리 실행물(throwaway)
