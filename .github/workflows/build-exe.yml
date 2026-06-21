@@ -18,8 +18,10 @@ jobs:
           node-version: "20"
       - name: Build dashboard
         working-directory: create-report
+        # npm ci 는 lock 과 package.json 의 optional 의존성(@emnapi 등) 해석이 npm 버전별로
+        # 달라 실패할 수 있어, 관대한 npm install 사용(단일 개발자 프로젝트).
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
 
       # 2) uv (app/pyproject.toml·uv.lock 으로 파이썬+의존성 관리, pyinstaller 는 dev 의존성)
