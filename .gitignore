@@ -36,11 +36,7 @@ create-report/_shots/
 **/.venv/
 **/*.egg-info/
 
-# === repo 미포함 폴더 (로컬에만 보관) ===
-# captcha-recognizer: 구 스크래퍼용 ML(은퇴). financials-backend: 로컬 GCP deploy 용도
-# app: 구 Tkinter GUI(폐기) 로컬 잔존물 대비
-captcha-recognizer/
-financials-backend/
+# === 폐기 폴더 로컬 잔존물 대비 (app=구 Tkinter GUI) ===
 app/
 
 # === kis mock 테스트 산출물 ===
