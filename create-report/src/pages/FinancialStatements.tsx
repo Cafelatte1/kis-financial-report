@@ -92,7 +92,7 @@ export default function FinancialStatements() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <SectionTitle title="재무제표" />
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-slate-500">단위 {ccy} · T=조 B=10억 M=백만 · 출처 yfinance(GCP 캐시)</span>
+          <span className="text-[11px] text-slate-500">단위 {ccy} · T=조 B=10억 M=백만 · 출처 yfinance(로컬 누적 캐시)</span>
           <select
             value={sym}
             onChange={(e) => setSym(e.target.value)}

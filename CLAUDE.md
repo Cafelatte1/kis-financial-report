@@ -26,13 +26,13 @@ get_trades/get_financial_statements/query_db(read-only SQL)/update_portfolio.
 
 - **입력(raw)**: `raw_domestic`(체결내역) · `raw_holdings`(잔고: 평단·수량) · `raw_realized`(기간 실현손익) — KIS API가 코퍼레이트 액션 반영해 계산한 **브로커 권위값**
 - **파생**(etl이 재생성): `trades` · `holdings` · `realized` · `realized_events` · `holdings_changes` · `holdings_monthly`
-- **캐시**(yfinance, 영속): `prices` · `fin`(재무지표) · `hist_daily` · `hist_monthly` · `splits`
+- **캐시**(yfinance, 영속): `prices` · `fin`(재무지표) · `hist_daily` · `hist_monthly` · `splits` · `statements`(재무제표 기간누적)
 
 ## 주의사항
 
 - KIS 토큰 발급 **1회/분 제한**(EGW00133) — update 연속 실행 금지. 토큰은 `.token.json` 캐시(23h)
 - 잘못된 TR 호출은 계좌 잠금 위험 → `api_ingest.py`의 검증된 TR만 사용, 프로브-게이트 유지
 - 실DB 실험 금지 — 테스트는 `--mock` 또는 `KIS_DATA_DIR` 격리 폴더로
-- 재무제표는 GCP 백엔드(Cloud Run, `financials_api.py`) 경유 — Firestore에 기간 누적되므로 호출 자체가 아카이빙
+- 재무제표는 `financials_api.py`가 yfinance에서 직접 받아 `statements` 테이블에 기간 누적(yfinance가 떨군 과거분 보존) — 이 캐시를 지우면 4년 이전 재무제표는 복구 불가
 - `create-report/`는 표시 전용(계산 없음) — 지표 로직은 전부 `kis/compute.py`
 - 커밋은 conventional commit + 한국어 Why/What/How 템플릿 (전역 CLAUDE.md 참조)

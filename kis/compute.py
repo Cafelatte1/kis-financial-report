@@ -278,14 +278,14 @@ def main():
               "closed": closed, "timeline": timeline, "monthly": monthly, "monthly_latest": monthly_latest,
               "contributions": contributions, "sector_tilt": sector_tilt, **perf}
 
-    # ===== 재무제표(income/balance/cashflow) — GCP 백엔드 경유, 별도 파일 =====
-    # 지표(ratios)는 위 H.fin(로컬 캐시), 재무제표는 백엔드가 Firestore 에 기간별 누적 저장.
+    # ===== 재무제표(income/balance/cashflow) — yfinance 직접 + statements 테이블 누적 =====
+    # 지표(ratios)는 위 H.fin(로컬 캐시), 재무제표는 financials_api 가 기간 병합·누적 저장.
     statements = {}
     for h in H:
         st = FA.get_statements(h["symbol"], h["country"])
         if st:
             statements[h["symbol"]] = {"name": h["name"], "country": h["country"], **st}
-    print(f"financials (GCP backend): {len(statements)}/{len(H)} holdings")
+    print(f"financials (yfinance, local merge-cache): {len(statements)}/{len(H)} holdings")
 
     os.makedirs(OUTDIR, exist_ok=True)
     json.dump(report, open(os.path.join(OUTDIR, "portfolio.json"), "w", encoding="utf-8"),

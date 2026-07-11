@@ -53,8 +53,8 @@ uv run kis serve                # http://127.0.0.1:8777 대시보드
 
 ```
 KIS OpenAPI ─→ api_ingest ─→ portfolio.db ─→ etl ─→ compute ─→ JSON 3종 ─→ React 대시보드
-                                  ↑                    │                        (표시 전용)
-                yfinance 캐시(가격·지표·분할) ─────────┘── GCP 재무제표 백엔드(Firestore 누적)
+                                  ↑                                             (표시 전용)
+                yfinance 캐시(가격·지표·분할·재무제표 누적) — 전부 로컬 SQLite
 ```
 
 | 폴더 | 역할 |
@@ -64,7 +64,7 @@ KIS OpenAPI ─→ api_ingest ─→ portfolio.db ─→ etl ─→ compute ─�
 | `data-pipeline/` | (은퇴) 구 Edge 스크래퍼 — OpenAPI로 대체, 코드 보존용 |
 
 - **코퍼레이트 액션**(분할·합병·무상): 보유·실현손익은 KIS가 반영해 계산한 **브로커 권위값** 사용, TWR 과거수량은 yfinance 분할정보로 보정
-- **재무지표**(PER·β 등)는 로컬 캐시, **재무제표**(3표)는 GCP 백엔드가 Firestore에 기간 누적 — 상세는 [`kis/README.md`](kis/README.md)
+- **재무제표**(손익/재무상태/현금흐름)는 yfinance 롤링 윈도우(~4년)를 **로컬 SQLite에 기간 누적**해 과거분 보존 — 상세는 [`kis/README.md`](kis/README.md)
 - 자격정보·거래데이터는 전부 로컬(.env·db는 gitignore) — repo엔 코드만. AI 에이전트용 안내는 [`CLAUDE.md`](CLAUDE.md)
 
 ## 라이선스

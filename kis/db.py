@@ -39,6 +39,8 @@ def init_cache(con):
             ticker TEXT, date TEXT, close REAL, PRIMARY KEY(ticker, date));
         CREATE TABLE IF NOT EXISTS splits(
             ticker TEXT, date TEXT, ratio REAL, PRIMARY KEY(ticker, date));
+        CREATE TABLE IF NOT EXISTS statements(
+            symbol TEXT, freq TEXT, data TEXT, fetched_at TEXT, PRIMARY KEY(symbol, freq));
     """)
     con.commit()
 

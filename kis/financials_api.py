@@ -1,52 +1,102 @@
-"""재무제표(income/balance/cashflow) 수집 — GCP financials-backend(Cloud Run) 경유.
+"""재무제표(income/balance/cashflow) 수집 — yfinance 직접 + portfolio.db 누적 캐시.
 
-지표(ratios: PER·PBR·β 등)는 market.get_financials(로컬 portfolio.db 캐시)가 담당하고,
-이 모듈은 '전체 재무제표'를 백엔드에서 받아온다. 백엔드는 받은 기간을 Firestore 에
-기간(period) 단위로 병합·누적 저장하므로, 호출 자체가 N년치 아카이빙을 유발한다
-(yfinance 가 롤링 윈도우로 떨군 과거 기간도 캐시에 보존됨).
+(구) GCP financials-backend(Cloud Run+Firestore)를 로컬로 대체. yfinance 는 재무제표를
+롤링 윈도우(연간 ~4년 / 분기 ~5개)로만 주고 오래된 기간은 떨구므로, 받은 기간을
+statements 테이블에 **기간(period) 단위로 병합·누적**해 과거 재무제표를 보존한다.
+fetched_at 이 REFRESH_DAYS(기본 7일) 이내면 캐시 그대로 반환(네트워크 0).
 
-커버: KR/US (백엔드 정책). 그 외 국가/조회 실패/네트워크 오류는 None → 호출측에서 건너뛴다.
-백엔드 URL 은 비밀이 아니며 FINANCIALS_API_URL 로 override 가능.
+커버: KR/US. 그 외 국가/조회 실패는 None → 호출측(compute)에서 건너뛴다.
+반환 계약은 구 백엔드 버전과 동일: {'annual': set|None, 'quarterly': set|None} | None,
+set = {ticker, income, balance, cashflow, fetched_at}, 각 재무제표 = {기간ISO: {항목: 값}}.
 """
 import os
+import json
+import math
+import datetime
 
-import requests
+import db
+import market
 
-BASE_URL = os.environ.get(
-    "FINANCIALS_API_URL",
-    "https://financials-backend-1048035848462.asia-northeast1.run.app",
-).rstrip("/")
 COVERED = {"KR", "US"}
-_TIMEOUT = 20
+REFRESH_DAYS = int(os.environ.get("FIN_REFRESH_DAYS", "7"))
+KEYS = ("income", "balance", "cashflow")
 
 
-def _fetch(symbol, country, freq):
-    """단일 freq 재무제표 | None. {ticker,income,balance,cashflow,fetched_at}."""
-    r = requests.get(f"{BASE_URL}/financials",
-                     params={"symbol": symbol, "country": country, "freq": freq},
-                     timeout=_TIMEOUT)
-    r.raise_for_status()
-    d = r.json()
-    if not d.get("covered") or d.get("found") is False:
-        return None
-    if not (d.get("income") or d.get("balance") or d.get("cashflow")):
-        return None
-    return {k: d.get(k) for k in ("ticker", "income", "balance", "cashflow", "fetched_at")}
+def _normalize(df):
+    """yfinance 재무제표 DataFrame → {기간(ISO): {항목: 값}}. NaN 제외."""
+    if df is None or getattr(df, "empty", True):
+        return {}
+    out = {}
+    for col in df.columns:
+        try:
+            period = col.strftime("%Y-%m-%d")
+        except AttributeError:
+            period = str(col)
+        items = {}
+        for item, val in df[col].items():
+            if val is None or (isinstance(val, float) and math.isnan(val)):
+                continue
+            items[str(item)] = float(val) if isinstance(val, (int, float)) else val
+        if items:
+            out[period] = items
+    return out
+
+
+def _fetch(ticker, freq):
+    """yfinance 재무제표 | None."""
+    import yfinance as yf
+    t = yf.Ticker(ticker)
+    if freq == "quarterly":
+        income, balance, cashflow = t.quarterly_financials, t.quarterly_balance_sheet, t.quarterly_cashflow
+    else:
+        income, balance, cashflow = t.financials, t.balance_sheet, t.cashflow
+    d = {"ticker": ticker, "income": _normalize(income),
+         "balance": _normalize(balance), "cashflow": _normalize(cashflow)}
+    return d if (d["income"] or d["balance"] or d["cashflow"]) else None
+
+
+def _merge(old, new):
+    """기간 단위 병합 — 겹치는 기간은 새 값, yfinance 가 떨군 과거 기간은 보존."""
+    merged = {"ticker": new.get("ticker") or (old or {}).get("ticker")}
+    for k in KEYS:
+        merged[k] = {**((old or {}).get(k) or {}), **(new.get(k) or {})}
+    return merged
+
+
+def _stale(doc):
+    ts = (doc or {}).get("fetched_at")
+    if not ts:
+        return True
+    try:
+        when = datetime.datetime.fromisoformat(ts)
+    except ValueError:
+        return True
+    return (datetime.datetime.now() - when).days >= REFRESH_DAYS
 
 
 def get_statements(symbol, country):
-    """{'annual': set|None, 'quarterly': set|None} | None.
-
-    KR/US 외이거나 두 freq 모두 실패하면 None. 개별 freq 의 네트워크/HTTP 오류는 삼킨다.
-    """
+    """{'annual': set|None, 'quarterly': set|None} | None. 캐시 신선하면 그대로, 아니면 fetch+병합."""
     if country not in COVERED:
         return None
+    con = db.connect()
     out = {}
-    for freq in ("annual", "quarterly"):
-        try:
-            out[freq] = _fetch(symbol, country, freq)
-        except Exception:
-            out[freq] = None
-    if not (out.get("annual") or out.get("quarterly")):
-        return None
-    return out
+    try:
+        for freq in ("annual", "quarterly"):
+            row = con.execute("SELECT data FROM statements WHERE symbol=? AND freq=?",
+                              (symbol, freq)).fetchone()
+            doc = json.loads(row[0]) if row else None
+            if _stale(doc):
+                try:
+                    new = _fetch(market.resolve_ticker(symbol, country), freq)
+                except Exception:
+                    new = None
+                if new:
+                    doc = _merge(doc, new)
+                    doc["fetched_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+                    con.execute("INSERT OR REPLACE INTO statements VALUES (?,?,?,?)",
+                                (symbol, freq, json.dumps(doc, ensure_ascii=False), doc["fetched_at"]))
+                    con.commit()
+            out[freq] = doc
+    finally:
+        con.close()
+    return out if (out.get("annual") or out.get("quarterly")) else None
