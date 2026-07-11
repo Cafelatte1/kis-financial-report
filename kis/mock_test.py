@@ -1,6 +1,6 @@
 """mock 회귀 검증: KR+US 혼합이 etl→compute 에서 손계산 기대값대로 나오는지 대조.
 
-실제 DB 보호: KIS_DATA_DIR 를 격리 폴더(data-etl/_mock)로 강제 후 임포트.
+실제 DB 보호: KIS_DATA_DIR 를 격리 폴더(kis/_mock)로 강제 후 임포트.
 데이터·기대값은 mock_seed 에서 공유(중복 제거).
 
   python mock_test.py            # 검증(네트워크: compute 가 yfinance 호출)

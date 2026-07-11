@@ -1,16 +1,21 @@
-# data-etl
+# kis (코어)
 
-**KIS OpenAPI 수집 → 단일 SQLite(`portfolio.db`) → 전 지표 계산(`portfolio.json`)** 까지의 데이터 계층.
-의존성은 [uv](https://docs.astral.sh/uv/) 로 관리(`pyproject.toml`).
+**KIS OpenAPI 수집 → 단일 SQLite(`portfolio.db`) → 전 지표 계산(JSON 3종)** + **CLI(`kis`) / MCP 서버(`kis-mcp`)**.
+의존성은 [uv](https://docs.astral.sh/uv/) 로 관리(`pyproject.toml`, editable 패키지).
 
-## 단계
+## 실행
 ```bash
-cd data-etl
+cd kis
+uv run kis update             # 전체 갱신 (아래 3단계를 서브프로세스로 순차 실행)
+uv run kis serve              # 대시보드 서빙 · kis status · kis export — 루트 README 참고
+uv run kis-mcp                # MCP 서버(stdio) — 루트 .mcp.json 이 자동 등록
+
+# 단계 개별 실행(디버깅용):
 uv run python api_ingest.py   # 1. KIS OpenAPI → raw 테이블(거래·잔고·실현손익)
 uv run python etl.py          # 2. raw → 파생 테이블(trades/holdings/realized/…)
 uv run python compute.py      # 3. 파생 + yfinance(지표) + GCP백엔드(재무제표) → portfolio.json / trades.json / financials.json
 ```
-> 자격정보는 환경변수(`KIS_APP_KEY`/`KIS_SECRET_KEY`/`KIS_ACC`), 조회기간은 `KIS_FROM_DATE`/`KIS_TO_DATE` 로 주입(앱이 OS 자격증명 저장소에서 읽어 전달). 출력 폴더는 `KIS_DATA_DIR`(미설정 시 로컬).
+> 자격정보는 **루트 `.env`**(`KIS_APP_KEY`/`KIS_SECRET_KEY`/`KIS_ACC`) — api_ingest 가 직접 로드. 조회기간은 `KIS_FROM_DATE`/`KIS_TO_DATE`(cli 가 `--from-date/--to-date` 로 주입). 출력 폴더는 `KIS_DATA_DIR`(미설정 시 repo 로컬).
 
 ## 테이블 (단일 `portfolio.db`)
 | 계층 | 테이블 | 내용 |
@@ -36,6 +41,6 @@ uv run python compute.py      # 3. 파생 + yfinance(지표) + GCP백엔드(재�
 - 금액은 native 저장(해외=USD, KR=KRW). **USD 베이스 환산·전 지표 계산은 `compute.py`** 가 담당(거래시점 환율 yfinance 캐시).
 
 ## 파일
-`api_ingest.py`(KIS OpenAPI 수집), `db.py`(연결·스키마 단일 권위), `etl.py`(raw→파생), `transform.py`(파싱·평균단가 엔진), `market.py`(yfinance 단일 진입점+캐시), `financials_api.py`(재무제표 GCP 백엔드 호출), `compute.py`(전 지표→JSON), `schema.sql`, `config.py`.
+`cli.py`(CLI 진입점), `mcp_server.py`(MCP 서버), `api_ingest.py`(KIS OpenAPI 수집), `db.py`(연결·스키마 단일 권위), `etl.py`(raw→파생), `transform.py`(파싱·평균단가 엔진), `market.py`(yfinance 단일 진입점+캐시), `financials_api.py`(재무제표 GCP 백엔드 호출), `compute.py`(전 지표→JSON), `schema.sql`, `config.py`, `mock_seed.py`/`mock_test.py`(회귀 테스트).
 
 > `portfolio.db` 는 gitignore(개인 금융정보).

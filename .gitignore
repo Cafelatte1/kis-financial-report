@@ -28,23 +28,23 @@ create-report/src/data/*.json
 create-report/public/data/*.json
 create-report/_shots/
 
-# === app 빌드 산출물 (PyInstaller) ===
-app/build/
-app/dist/
 **/*.exe
 **/포트폴리오리포트_*.pdf
 **/*리포트*.pdf
 
-# === 파이썬 가상환경(전 폴더 공통) ===
+# === 파이썬 가상환경·패키징 산출물(전 폴더 공통) ===
 **/.venv/
+**/*.egg-info/
 
 # === repo 미포함 폴더 (로컬에만 보관) ===
 # captcha-recognizer: 구 스크래퍼용 ML(은퇴). financials-backend: 로컬 GCP deploy 용도
+# app: 구 Tkinter GUI(폐기) 로컬 잔존물 대비
 captcha-recognizer/
 financials-backend/
+app/
 
-# === data-etl mock 테스트 산출물 ===
+# === kis mock 테스트 산출물 ===
 # mock_test.py 격리 실행물(throwaway)
-data-etl/_mock/
+kis/_mock/
 # api_ingest 격리 검증물(throwaway)
-data-etl/_apitest/
+kis/_apitest/

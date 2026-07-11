@@ -1,0 +1,26 @@
+[project]
+name = "kis-report"
+version = "2.0.0"
+description = "KIS 포트폴리오 리포트 — OpenAPI 수집 → ETL → 지표계산 + CLI/MCP"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "requests>=2.31",     # KIS OpenAPI 호출(api_ingest) · 재무제표 백엔드(financials_api)
+    "python-dotenv>=1.0", # 루트 .env 자격정보 로드
+    "yfinance>=0.2",      # market: 현재가·재무·과거가·분할
+    "numpy>=1.26",        # compute 스타일 회귀
+    "pandas>=2.0",        # yfinance 의존
+    "mcp>=1.2",           # MCP 서버(mcp_server)
+]
+
+[project.scripts]
+kis = "cli:main"
+kis-mcp = "mcp_server:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+# 폴더가 flat 스크립트 구성이라 py-modules 로 명시 (자동탐색 비활성)
+[tool.setuptools]
+py-modules = ["cli", "mcp_server", "api_ingest", "etl", "compute", "market",
+              "financials_api", "db", "transform", "config", "mock_seed"]

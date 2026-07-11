@@ -8,11 +8,10 @@
 etl.py 가 위 3개 입력테이블에서 파생(holdings/realized/trades…)을 생성한다.
 
 안전: 연도 루프 전 프로브 1건(rt_cd=0) 확인. 계좌비밀번호 미사용. 시크릿 마스킹.
-자격정보: env(KIS_APP_KEY/KIS_SECRET_KEY/KIS_ACC) 우선, 없으면 kis-api-test/.env + app keyring 폴백.
+자격정보: env(KIS_APP_KEY/KIS_SECRET_KEY/KIS_ACC) 우선, 없으면 루트 .env 로드.
 """
 import os
 import re
-import sys
 import json
 import time
 import datetime
@@ -58,19 +57,18 @@ def _iso(d):
 
 
 def _load_creds():
-    """env(앱 주입) 우선, 없으면 kis_config(keyring/개발폴백)."""
-    c = {}
+    """이미 설정된 env 우선, 없으면 루트 .env 를 로드해 채운다(override=False)."""
     try:
-        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app"))
-        import kis_config
-        c = kis_config.load() or {}
-    except Exception:
+        from dotenv import load_dotenv
+        root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+        load_dotenv(root_env, override=False)
+    except ImportError:
         pass
-    appkey = os.environ.get("KIS_APP_KEY") or c.get("APP_KEY")
-    secret = os.environ.get("KIS_SECRET_KEY") or c.get("APP_SECRET")
-    acc = os.environ.get("KIS_ACC") or c.get("ACC_NUMBER")
+    appkey = os.environ.get("KIS_APP_KEY")
+    secret = os.environ.get("KIS_SECRET_KEY")
+    acc = os.environ.get("KIS_ACC")
     if not (appkey and secret and acc):
-        raise SystemExit("ERROR: missing credentials - APP_KEY/APP_SECRET/ACCOUNT_NUMBER required (GUI Settings or .env)")
+        raise SystemExit("ERROR: missing credentials - set KIS_APP_KEY/KIS_SECRET_KEY/KIS_ACC in .env (see .env.example)")
     digits = re.sub(r"\D", "", acc)
     return appkey, secret, digits[:8], (digits[8:10] or "01")
 

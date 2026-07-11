@@ -1,19 +1,19 @@
 # create-report
 
-`data-etl` 가 산출한 `portfolio.json` 을 표시하는 **16:9 포트폴리오 리포트 대시보드** (기본통화 **USD**).
-Vite + React + TS + Tailwind + Recharts. **계산은 하지 않고 표시만** 한다(지표 계산은 `data-etl/compute.py`).
+`kis` 가 산출한 `portfolio.json` 을 표시하는 **16:9 포트폴리오 리포트 대시보드** (기본통화 **USD**).
+Vite + React + TS + Tailwind + Recharts. **계산은 하지 않고 표시만** 한다(지표 계산은 `kis/compute.py`).
 
 ## 데이터 흐름
 ```
-data-etl/compute.py ─(portfolio.db + yfinance + GCP재무제표백엔드)→
+kis/compute.py ─(portfolio.db + yfinance + GCP재무제표백엔드)→
    {portfolio,trades}.json + financials.json → React 렌더(16:9)
 ```
-> JSON 은 앱 실행 시 `%APPDATA%\KIS-Report\report\` 에, 개발 시 `public/data/` 에 생성된다.
+> JSON 은 기본 `public/data/` 에 생성된다(`KIS_DATA_DIR` 설정 시 `{dir}/report/`).
 > `financials.json`(재무제표)은 용량이 커서 별도 파일로 분리해 **재무제표 탭에서 lazy fetch** 한다.
 
 ## 실행
 ```bash
-npm ci && npm run dev           # (build / preview) — JSON 은 data-etl/compute.py 가 먼저 생성
+npm ci && npm run dev           # (build / preview) — JSON 은 kis/compute.py 가 먼저 생성
 ```
 
 ## 구조 (섹션 세로 스택, 상단 탭으로 이동)
@@ -44,10 +44,10 @@ npm ci && npm run dev           # (build / preview) — JSON 은 data-etl/comput
 - **IRR**: 전기간 자금가중(현금흐름+현재평가액, 과거가 불필요).
 - 벤치마크: **S&P500=`^GSPC` 지수**, **ACWI=ETF**. 둘 다 가격수익 기준.
 
-## 시장데이터 (portfolio.db 캐시, data-etl/market.py)
+## 시장데이터 (portfolio.db 캐시, kis/market.py)
 `prices`(현재가/환율) · `fin`(베타·PER·PBR·배당·섹터·시총) · `hist_monthly`·`hist_daily`(과거가) · `splits`(분할).
 없으면 yfinance fetch 후 저장. 미지원/상폐 종목은 직접 INSERT 가능.
 
 ## 데이터 갱신
-`data-etl`: `api_ingest.py`(KIS OpenAPI) → `etl.py` → `compute.py` → `{portfolio,trades}.json`.
-앱의 **[↻ 데이터 최신화]** 가 이 플로우를 실행한다. `public/data/*.json`·`portfolio.db`·`_shots` 는 개인정보/캐시라 gitignore.
+`kis update` 가 `api_ingest.py`(KIS OpenAPI) → `etl.py` → `compute.py` → JSON 3종 플로우를 실행하고,
+`kis serve` 가 dist + `/data` 오버레이로 서빙한다. `public/data/*.json`·`portfolio.db`·`_shots` 는 개인정보/캐시라 gitignore.

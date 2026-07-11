@@ -1,7 +1,7 @@
 """KR+US 혼합 mock 거래내역을 raw_domestic 에 적재. (run_pipeline --mock / mock_test 공용)
 
 실제 스크랩 대신 쓰는 가짜 입력. KIS_DATA_DIR 가 가리키는 DB(portfolio.db)에 기록한다.
-단독/서브프로세스 실행 시 KIS_DATA_DIR 미설정이면 data-etl/_mock 로 격리(실제 DB 보호).
+단독/서브프로세스 실행 시 KIS_DATA_DIR 미설정이면 kis/_mock 로 격리(실제 DB 보호).
 
   python mock_seed.py            # _mock 에 raw_domestic 적재
 """

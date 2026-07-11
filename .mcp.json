@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kis-portfolio": {
+      "command": "uv",
+      "args": ["run", "--project", "kis", "kis-mcp"]
+    }
+  }
+}
