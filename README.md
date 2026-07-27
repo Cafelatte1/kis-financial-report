@@ -43,16 +43,23 @@ uv run kis update               # KIS OpenAPI 수집 → ETL → 지표 계산 (
 uv run kis serve                # http://127.0.0.1:8777
 ```
 
-계정 없이 먼저 보고 싶다면 `uv run kis update --mock` — 가짜 데이터로 격리 실행되어 실제 DB를 건드리지 않습니다.
+계정 없이 먼저 둘러보려면:
+
+```bash
+uv run kis update --mock        # 가짜 데이터로 격리 실행 (kis/_mock, 실제 DB 무영향)
+uv run kis serve --mock         # 같은 데이터로 대시보드 확인
+```
 
 ## CLI
 
 | 명령 | 동작 |
 |---|---|
-| `kis update [--from-date --to-date] [--mock]` | 전체 갱신: API 수집 → ETL → 지표계산 |
+| `kis update [--from-date --to-date]` | 전체 갱신: API 수집 → ETL → 지표계산 |
 | `kis serve [--port 8777] [--no-browser]` | 웹 대시보드 서빙 (보기 전용) |
 | `kis status [--json]` | 데이터 존재·asof·보유종목 수 (exit 0 = 정상) |
 | `kis export {report\|holdings\|trades\|financials}` | 리포트 JSON을 stdout으로 (파이프/AI용) |
+
+네 명령 모두 `--mock`(가짜 데이터) 과 `--data-dir <경로>`(위치 override) 를 받습니다.
 
 데이터는 **repo 로컬**에 저장됩니다(전부 gitignore): DB `kis/portfolio.db`, JSON `create-report/public/data/`.
 `KIS_DATA_DIR` 환경변수 또는 `--data-dir` 로 위치를 바꿀 수 있습니다.

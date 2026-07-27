@@ -41,6 +41,14 @@ def _paths(env=None):
     return os.path.join(HERE, "portfolio.db"), os.path.join(ROOT, "create-report", "public", "data")
 
 
+def _apply_data_dir(args):
+    """--mock / --data-dir → KIS_DATA_DIR. mock 이 우선(update --mock 과 같은 폴더를 본다)."""
+    if getattr(args, "mock", False):
+        os.environ["KIS_DATA_DIR"] = MOCK_DIR
+    elif args.data_dir:
+        os.environ["KIS_DATA_DIR"] = os.path.abspath(args.data_dir)
+
+
 def _run(script, env, label):
     print(f"\n=== {label}: {os.path.relpath(script, ROOT)} ===", flush=True)
     r = subprocess.run([sys.executable, script], env=env, cwd=os.path.dirname(script))
@@ -76,11 +84,10 @@ def cmd_update(args):
 
 # ---------------------------------------------------------------- serve
 def cmd_serve(args):
-    if args.data_dir:
-        os.environ["KIS_DATA_DIR"] = os.path.abspath(args.data_dir)
+    _apply_data_dir(args)
     _, report_dir = _paths()
     if not os.path.isfile(os.path.join(DIST, "index.html")):
-        sys.exit(f"ABORTED: dashboard build not found - run 'npm ci && npm run build' in create-report first ({DIST})")
+        sys.exit(f"ABORTED: dashboard build not found - run 'npm install && npm run build' in create-report first ({DIST})")
     if not os.path.isfile(os.path.join(report_dir, "portfolio.json")):
         sys.exit(f"ABORTED: no report data - run 'kis update' first ({report_dir})")
 
@@ -111,8 +118,7 @@ def cmd_serve(args):
 
 # ---------------------------------------------------------------- status
 def cmd_status(args):
-    if args.data_dir:
-        os.environ["KIS_DATA_DIR"] = os.path.abspath(args.data_dir)
+    _apply_data_dir(args)
     db_path, report_dir = _paths()
     report_path = os.path.join(report_dir, "portfolio.json")
     st = {"db": db_path, "db_exists": os.path.isfile(db_path),
@@ -147,8 +153,7 @@ def cmd_status(args):
 
 # ---------------------------------------------------------------- export
 def cmd_export(args):
-    if args.data_dir:
-        os.environ["KIS_DATA_DIR"] = os.path.abspath(args.data_dir)
+    _apply_data_dir(args)
     _, report_dir = _paths()
     files = {"report": "portfolio.json", "trades": "trades.json", "financials": "financials.json"}
     src = os.path.join(report_dir, files.get(args.what, "portfolio.json"))
@@ -176,16 +181,19 @@ def main():
     p = sub.add_parser("serve", help="웹 대시보드 서빙 (create-report/dist + /data 오버레이)")
     p.add_argument("--port", type=int, default=DASH_PORT)
     p.add_argument("--no-browser", action="store_true", help="브라우저 자동 열기 생략")
+    p.add_argument("--mock", action="store_true", help="mock 데이터(kis/_mock) 서빙")
     p.add_argument("--data-dir", help="report 데이터 폴더 override")
     p.set_defaults(fn=cmd_serve)
 
     p = sub.add_parser("status", help="데이터 존재·asof·보유종목 수 (exit 0=정상)")
     p.add_argument("--json", action="store_true", help="기계가 읽는 JSON 출력")
+    p.add_argument("--mock", action="store_true", help="mock 데이터(kis/_mock) 기준")
     p.add_argument("--data-dir", help="데이터 폴더 override")
     p.set_defaults(fn=cmd_status)
 
     p = sub.add_parser("export", help="리포트 JSON 을 stdout 으로 덤프")
     p.add_argument("what", choices=["report", "holdings", "trades", "financials"])
+    p.add_argument("--mock", action="store_true", help="mock 데이터(kis/_mock) 기준")
     p.add_argument("--data-dir", help="데이터 폴더 override")
     p.set_defaults(fn=cmd_export)
 
