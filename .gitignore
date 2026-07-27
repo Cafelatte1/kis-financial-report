@@ -36,6 +36,10 @@ create-report/_shots/
 **/.venv/
 **/*.egg-info/
 
+# === 로컬 전용 (공개 안 함) ===
+# kis-api-test 등 실계좌로 돌리는 검증 스크립트·실측 기록
+local/
+
 # === 폐기 폴더 로컬 잔존물 대비 (app=구 Tkinter GUI) ===
 app/
 
