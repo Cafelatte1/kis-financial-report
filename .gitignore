@@ -2,49 +2,25 @@
 __pycache__/
 *.pyc
 .DS_Store
-
-# === 자격정보/시크릿 (절대 커밋 금지) ===
-**/.env
-**/.data
-**/jwt.txt
-**/.token.json
-**/service-account*.json
-**/*-sa.json
-**/gcp-key*.json
-
-# === 산출물/로그 (개인정보 포함) ===
-**/output*.csv
-**/*.log
-**/*.db
-
-# === CAPTCHA 캡처물 (HTML 덤프에 계좌정보 포함 가능) ===
-# 덤프는 모두 captcha/ 폴더에만 생성됨. (전역 *.html 금지 → create-report/index.html 등 소스가 빠지므로 금지)
-**/captcha/
-
-# === create-report (개인 금융데이터·빌드·스크린샷) ===
-**/node_modules/
-**/dist/
-create-report/src/data/*.json
-create-report/public/data/*.json
-create-report/_shots/
-
-**/*.exe
-**/포트폴리오리포트_*.pdf
-**/*리포트*.pdf
-
-# === 파이썬 가상환경·패키징 산출물(전 폴더 공통) ===
 **/.venv/
 **/*.egg-info/
+**/node_modules/
+**/dist/
 
-# === 로컬 전용 (공개 안 함) ===
-# kis-api-test 등 실계좌로 돌리는 검증 스크립트·실측 기록
+# === 자격정보 (절대 커밋 금지) ===
+**/.env
+**/.token.json
+
+# === 개인 금융데이터 ===
+**/*.db
+**/*.log
+create-report/src/data/*.json
+create-report/public/data/*.json
+
+# === 로컬 전용 (공개 대상 아님) ===
+# 실계좌 검증 스크립트·은퇴 코드 보관
 local/
 
-# === 폐기 폴더 로컬 잔존물 대비 (app=구 Tkinter GUI) ===
-app/
-
-# === kis mock 테스트 산출물 ===
-# mock_test.py 격리 실행물(throwaway)
+# === mock 테스트 산출물 (throwaway) ===
 kis/_mock/
-# api_ingest 격리 검증물(throwaway)
 kis/_apitest/
