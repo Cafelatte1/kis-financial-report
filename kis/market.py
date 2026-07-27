@@ -215,12 +215,16 @@ def get_monthly_closes(tickers, start="2019-01-01", fetch=True):
 def get_daily_closes(tickers, start="2022-01-01", fetch=True):
     """{ticker: {date: close}}  일별 조정종가. 캐시 우선, 부족분만 yfinance."""
     con = db.connect()
-    out, missing = {}, []
+    # 꼬리 신선도 기준(주말·휴장 감안 5일) — 지나면 재조회해 최근 구간을 채운다
+    fresh_from = (datetime.date.today() - datetime.timedelta(days=5)).isoformat()
+    out, missing, cached = {}, [], {}
     for tk in tickers:
         rows = con.execute("SELECT date,close FROM hist_daily WHERE ticker=?", (tk,)).fetchall()
-        if rows and min(d for d, _ in rows)[:7] <= start[:7]:   # 캐시가 요청범위(start)를 덮을 때만 사용
-            out[tk] = {d: c for d, c in rows}
+        series = {d: c for d, c in rows}
+        if rows and min(series)[:7] <= start[:7] and max(series) >= fresh_from:
+            out[tk] = series                                   # 캐시가 start 를 덮고 꼬리도 최신일 때만 그대로 사용
         else:
+            cached[tk] = series                                # 상폐 등 재조회 실패 대비 (아래에서 병합)
             missing.append(tk)
     if fetch and missing:
         import yfinance as yf
@@ -237,7 +241,7 @@ def get_daily_closes(tickers, start="2022-01-01", fetch=True):
                 series = {}
             for d, c in series.items():
                 con.execute("INSERT OR REPLACE INTO hist_daily VALUES (?,?,?)", (tk, d, c))
-            out[tk] = series
+            out[tk] = {**cached.get(tk, {}), **series}
         con.commit()
     con.close()
     return out
