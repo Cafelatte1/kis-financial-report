@@ -4,7 +4,7 @@ version = "2.0.0"
 description = "KIS 포트폴리오 리포트 — OpenAPI 수집 → ETL → 지표계산 + CLI/MCP"
 requires-python = ">=3.10,<3.14"
 dependencies = [
-    "requests>=2.31",     # KIS OpenAPI 호출(api_ingest) · 재무제표 백엔드(financials_api)
+    "requests>=2.31",     # KIS OpenAPI 호출(api_ingest)
     "python-dotenv>=1.0", # 루트 .env 자격정보 로드
     "yfinance>=0.2",      # market: 현재가·재무·과거가·분할
     "numpy>=1.26",        # compute 스타일 회귀

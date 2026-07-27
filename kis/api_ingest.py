@@ -1,4 +1,4 @@
-"""KIS OpenAPI → 입력 테이블 적재(스크랩 대체).
+"""KIS OpenAPI → 입력 테이블 적재.
 
 코퍼레이트 액션(분할/전환/무상/합병)을 행으로 주는 KIS API 는 없으므로,
 이를 이미 반영해 '브로커가 계산한' 값을 직접 가져온다:
@@ -29,7 +29,7 @@ OVS_BAL = f"{BASE}/uapi/overseas-stock/v1/trading/inquire-present-balance"
 DOM_PROFIT = f"{BASE}/uapi/domestic-stock/v1/trading/inquire-period-trade-profit"
 OVS_PROFIT = f"{BASE}/uapi/overseas-stock/v1/trading/inquire-period-profit"
 
-# raw_domestic 정규 컬럼(스크랩과 동일 스키마). 미사용 컬럼은 빈값.
+# raw_domestic 정규 컬럼. 미사용 컬럼은 빈값.
 RAW_COLS = ["계좌", "조회구간", "거래일", "거래종류", "종목번호", "종목명", "상품유형",
             "거래수량", "거래단가", "환율", "거래통화", "거래금액", "정산금액", "수수료",
             "거래세", "세금", "부가세", "유가잔고", "외화잔액", "잔액", "잔고번호", "접속매체"]

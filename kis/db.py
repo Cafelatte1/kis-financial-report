@@ -1,12 +1,12 @@
 """포트폴리오 단일 DB(portfolio.db). 경로·연결·스키마의 단일 권위.
 
 테이블 3계층:
-- 입력  raw_domestic        : data-pipeline 스크랩이 직접 기록(동적 컬럼). reset 시 보존.
+- 입력  raw_domestic        : api_ingest 가 직접 기록(동적 컬럼). reset 시 보존.
 - 파생  trades/holdings/...  : etl.py 가 재생성. reset_derived() 가 DROP+CREATE.
 - 캐시  prices/fin/hist_*    : market.py(yfinance) 가 채움. 영속(절대 드롭하지 않음).
 
-pipeline·etl·compute·market 전부 이 모듈로 연결한다. KIS_DATA_DIR 설정 시(앱·exe)
-그 폴더의 portfolio.db, 아니면 이 폴더(단독 실행).
+api_ingest·etl·compute·market 전부 이 모듈로 연결한다. KIS_DATA_DIR 설정 시
+그 폴더의 portfolio.db, 아니면 이 폴더(repo 로컬).
 """
 import os
 import sqlite3

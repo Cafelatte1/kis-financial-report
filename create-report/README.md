@@ -5,7 +5,7 @@ Vite + React + TS + Tailwind + Recharts. **계산은 하지 않고 표시만** �
 
 ## 데이터 흐름
 ```
-kis/compute.py ─(portfolio.db + yfinance + GCP재무제표백엔드)→
+kis/compute.py ─(portfolio.db + yfinance)→
    {portfolio,trades}.json + financials.json → React 렌더(16:9)
 ```
 > JSON 은 기본 `public/data/` 에 생성된다(`KIS_DATA_DIR` 설정 시 `{dir}/report/`).
@@ -24,7 +24,7 @@ npm ci && npm run dev           # (build / preview) — JSON 은 kis/compute.py 
 보유표(수량·평단·현재가·평가액·미실현·**β·PER·섹터**) + **포폴 가중평균**(β/PER/PBR/배당) + **섹터 틸트**(포폴 vs S&P500 오버/언더).
 
 ### A2. 재무제표 (재무제표 탭)
-보유종목별 **손익계산서·재무상태표·현금흐름표**(연간/분기 토글). `financials.json` lazy fetch, 데이터 출처는 GCP 재무제표 백엔드(Firestore 누적). KR/US 만.
+보유종목별 **손익계산서·재무상태표·현금흐름표**(연간/분기 토글). `financials.json` lazy fetch, 데이터 출처는 yfinance(로컬 `statements` 테이블에 기간 누적). KR/US 만.
 
 ### B. 운용성과 분석 (open+closed = 계좌 전체) — 상단 3개 서브탭
 - **수익률 비교**: 전기간 **IRR**·누적 **TWR**(주별) vs **S&P500·ACWI**, **지수/금액 토글**(금액=보유 평가액 $ 추이) + 연도별 막대 + **연도별 승패**.
@@ -38,7 +38,7 @@ npm ci && npm run dev           # (build / preview) — JSON 은 kis/compute.py 
 > **Open/Closed 분류**: 베타·섹터·가중평균=open / 실현손익·승률·손익비=closed / TWR·IRR·샤프·포착률·MDD=계좌전체(둘다).
 
 ## 지표 방법론
-- 기본통화 **USD**. 해외 거래는 원래 USD(환산 불필요), **KR/CN은 거래시점 환율**(`KRW=X`·`CNY=X` 일봉 `prices.db` 캐시, 날짜별 forward-fill)로 환산.
+- 기본통화 **USD**. 해외 거래는 원래 USD(환산 불필요), **KR/CN은 거래시점 환율**(`KRW=X`·`CNY=X` 일봉 `portfolio.db` 캐시, 날짜별 forward-fill)로 환산.
 - **TWR**: 일별 Modified Dietz, 휴장일 현금흐름은 다음 거래일로 버킷팅, 가격 forward-fill. 벤치마크 동일시점 리베이스.
   **가격 커버리지 높은 최근 구간만**(초기 레버리지/상폐 ETF는 과거가 재구성 불가 → 제외, 헤더 표기).
 - **IRR**: 전기간 자금가중(현금흐름+현재평가액, 과거가 불필요).
@@ -50,4 +50,4 @@ npm ci && npm run dev           # (build / preview) — JSON 은 kis/compute.py 
 
 ## 데이터 갱신
 `kis update` 가 `api_ingest.py`(KIS OpenAPI) → `etl.py` → `compute.py` → JSON 3종 플로우를 실행하고,
-`kis serve` 가 dist + `/data` 오버레이로 서빙한다. `public/data/*.json`·`portfolio.db`·`_shots` 는 개인정보/캐시라 gitignore.
+`kis serve` 가 dist + `/data` 오버레이로 서빙한다. `public/data/*.json`·`portfolio.db` 는 개인 금융정보라 gitignore.

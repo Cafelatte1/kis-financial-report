@@ -1,12 +1,12 @@
 """재무제표(income/balance/cashflow) 수집 — yfinance 직접 + portfolio.db 누적 캐시.
 
-(구) GCP financials-backend(Cloud Run+Firestore)를 로컬로 대체. yfinance 는 재무제표를
+yfinance 는 재무제표를
 롤링 윈도우(연간 ~4년 / 분기 ~5개)로만 주고 오래된 기간은 떨구므로, 받은 기간을
 statements 테이블에 **기간(period) 단위로 병합·누적**해 과거 재무제표를 보존한다.
 fetched_at 이 REFRESH_DAYS(기본 7일) 이내면 캐시 그대로 반환(네트워크 0).
 
 커버: KR/US. 그 외 국가/조회 실패는 None → 호출측(compute)에서 건너뛴다.
-반환 계약은 구 백엔드 버전과 동일: {'annual': set|None, 'quarterly': set|None} | None,
+반환: {'annual': set|None, 'quarterly': set|None} | None,
 set = {ticker, income, balance, cashflow, fetched_at}, 각 재무제표 = {기간ISO: {항목: 값}}.
 """
 import os

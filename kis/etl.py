@@ -3,7 +3,7 @@
 입력 테이블 2계열(둘 중 가용한 쪽 사용):
 - API 적재(api_ingest): raw_domestic(매수/매도+유가잔고) + raw_holdings + raw_realized
   → holdings/realized 는 브로커 계산값(코퍼액션 반영)을 그대로 사용.
-- 스크랩/목(mock): raw_domestic 만 → 시간순 평균단가 엔진으로 holdings/realized 계산(폴백).
+- mock: raw_domestic 만 → 시간순 평균단가 엔진으로 holdings/realized 계산(폴백).
 
 - trades : 매수/매도(KR 주식 + 해외증권), native 금액 — 항상 raw_domestic 에서.
 - 분석 테이블은 KR/US 만 — 그 외 국가는 raw 에만 남김.

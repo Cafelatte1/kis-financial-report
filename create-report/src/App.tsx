@@ -22,7 +22,7 @@ export default function App() {
   const [err, setErr] = useState<string | null>(null);
   const [active, setActive] = useState(0);
 
-  // 순수 뷰어: portfolio.json 만 로드해 표시한다. (데이터 생성/최신화는 GUI 앱에서)
+  // 순수 뷰어: portfolio.json 만 로드해 표시한다. (데이터 생성/최신화는 `kis update`)
   const loadData = useCallback(() => {
     return fetch(`${import.meta.env.BASE_URL}data/portfolio.json`)
       .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
@@ -64,7 +64,7 @@ export default function App() {
     return (
       <Center>
         {err
-          ? <>데이터를 불러오지 못했습니다 ({err}).<br />KIS 앱에서 [데이터 최신화]로 먼저 생성해 주세요.</>
+          ? <>데이터를 불러오지 못했습니다 ({err}).<br /><code>uv run kis update</code> 로 먼저 생성해 주세요.</>
           : <>불러오는 중…</>}
       </Center>
     );

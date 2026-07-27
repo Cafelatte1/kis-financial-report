@@ -1,4 +1,4 @@
-"""kis — KIS 포트폴리오 리포트 CLI (구 run_pipeline.py + GUI 오케스트레이터 대체).
+"""kis — KIS 포트폴리오 리포트 CLI.
 
   kis update [--from-date --to-date] [--mock]   # API 수집 → etl → compute
   kis serve  [--port 8777] [--no-browser]       # 대시보드 서빙(dist + /data 오버레이)

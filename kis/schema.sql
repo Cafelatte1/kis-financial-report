@@ -1,5 +1,5 @@
 -- 파생 테이블 DDL (db.reset_derived 가 실행). raw_domestic(입력)·캐시는 여기서 건드리지 않는다.
--- raw_domestic 은 data-pipeline 이 스크랩 컬럼으로 직접 생성(db.write_raw).
+-- raw_domestic 은 api_ingest 가 수집 컬럼으로 직접 생성(db.write_raw).
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,

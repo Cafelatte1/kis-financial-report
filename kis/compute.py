@@ -19,7 +19,7 @@ import financials_api as FA
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 _DATA = os.environ.get("KIS_DATA_DIR")
-# 런타임 fetch용 JSON: 앱/exe면 KIS_DATA_DIR/report, 아니면 create-report/public/data
+# 런타임 fetch용 JSON: KIS_DATA_DIR 설정 시 {dir}/report, 아니면 create-report/public/data
 OUTDIR = os.path.join(_DATA, "report") if _DATA else os.path.join(REPO, "create-report", "public", "data")
 
 # 벤치마크: S&P500=지수(^GSPC), ACWI=ETF (MSCI ACWI 지수 무료소스 없음)
@@ -87,7 +87,7 @@ def main():
     con.close()
 
     usdkrw = M.get_fx("USD") or 1500.0
-    # 거래시점 환율: USD/KRW 일봉 캐시(prices.db) → 날짜별 forward-fill 적용
+    # 거래시점 환율: USD/KRW 일봉 캐시(portfolio.db) → 날짜별 forward-fill 적용
     fxhist = M.get_daily_closes(["KRW=X"], start="2019-01-01")
     fxsorted = {}
     for p in ("KRW=X",):

@@ -65,7 +65,7 @@ export interface Risk {
   max_up_streak: number; max_down_streak: number;
 }
 
-// 재무제표(financials.json) — GCP 백엔드 경유 수집. period(ISO) -> {라인항목: 값}
+// 재무제표(financials.json) — yfinance 수집분을 statements 테이블에 누적. period(ISO) -> {라인항목: 값}
 export type Statement = Record<string, Record<string, number | string>>;
 export interface StatementSet {
   ticker?: string; fetched_at?: string;
