@@ -18,6 +18,46 @@ TWR·IRR·스타일조정 알파·MDD까지 계산해 **웹 대시보드**와 **
 > ⚠️ 개인이 만든 **비공식** 도구입니다. 한국투자증권과 무관하며 무보증·투자조언이 아닙니다. 사용 전 **[DISCLAIMER.md](DISCLAIMER.md)** 를 읽어주세요.
 > *(스크린샷은 전부 `--mock` 가짜 데이터입니다.)*
 
+## 어떻게 쓰나
+
+### 1단계 — 준비 (처음 한 번만)
+
+| 할 일 | 어디서 |
+|---|---|
+| KIS 증권계좌 개설 + **실전투자** API 신청 | [KIS Developers](https://apiportal.koreainvestment.com/) — APP_KEY·APP_SECRET 발급 |
+| `.env` 파일에 키 3개 넣기 | `cp .env.example .env` 후 편집 (계좌비밀번호는 **필요 없습니다**) |
+| 설치·빌드 | 아래 [Quickstart](#quickstart) 명령 그대로 |
+
+> 계좌가 아직 없어도 `uv run kis update --mock` → `uv run kis serve --mock` 으로 가짜 데이터 대시보드를 먼저 볼 수 있습니다.
+
+### 2단계 — 데이터 갱신 (쓸 때마다)
+
+```bash
+cd kis
+uv run kis update      # 내 계좌를 가져와 지표 계산 (수 분)
+uv run kis serve       # http://127.0.0.1:8777 대시보드
+```
+
+거래한 날이나 주가를 다시 보고 싶은 날 `update` 를 돌리면 됩니다. **하루에 여러 번 돌릴 필요는 없고**, KIS 토큰이 1분에 1회만 발급되니 연속 실행은 피하세요.
+
+### 3단계 — AI에게 물어보기
+
+Claude Code에서 이 폴더를 열면 MCP가 **자동 연결**됩니다. 그 다음부터는 그냥 한국어로 말하면 됩니다.
+
+```
+"내 포트폴리오 지금 상태 요약해줘"
+"비중이 한쪽으로 쏠린 종목 있어? 리밸런싱 필요할까"
+"올해 실현손익 얼마야? 양도세 얼마 나오는지도 계산해줘"
+"내가 작년에 판 종목들, 그 뒤로 올랐어 내렸어?"
+"MSFT 팔고 AAPL 사면 비중이 어떻게 바뀌는지 계산해줘"
+"보유 종목 중에 재무제표가 나빠지는 곳 있는지 봐줘"
+"내 수익이 종목선택 덕분이야, 아니면 그냥 시장이 좋았던 거야?"
+```
+
+에이전트가 알아서 `get_holdings` · `get_performance` · `query_db(SQL)` 같은 도구를 골라 씁니다. **숫자를 직접 읽고 답하므로 추측이 아니라 내 계좌 실제 값**으로 대답합니다.
+
+> 데이터가 오래됐다 싶으면 `"포트폴리오 최신화해줘"` 라고 하면 에이전트가 `update_portfolio` 로 갱신합니다.
+
 ## 무엇이 다른가
 
 증권사 앱은 **"얼마 벌었나"** 는 보여주지만 **"잘 운용했나"** 는 알려주지 않습니다. 이 도구는 후자를 계산합니다.
@@ -41,13 +81,6 @@ cd create-report && npm install && npm run build && cd ..   # 대시보드 빌�
 cd kis
 uv run kis update               # KIS OpenAPI 수집 → ETL → 지표 계산 (수 분)
 uv run kis serve                # http://127.0.0.1:8777
-```
-
-계정 없이 먼저 둘러보려면:
-
-```bash
-uv run kis update --mock        # 가짜 데이터로 격리 실행 (kis/_mock, 실제 DB 무영향)
-uv run kis serve --mock         # 같은 데이터로 대시보드 확인
 ```
 
 ## CLI
@@ -81,6 +114,8 @@ uv run kis serve --mock         # 같은 데이터로 대시보드 확인
 | `get_financial_statements(symbol, freq)` | 손익/재무상태/현금흐름 (annual/quarterly) |
 | `query_db(sql)` | `portfolio.db` **read-only** 자유 질의 |
 | `update_portfolio(from?, to?)` | 전체 갱신 실행 (수 분 소요) |
+
+도구를 직접 호출할 일은 없습니다 — 위 **어떻게 쓰나 → 3단계** 처럼 평소 말로 물어보면 에이전트가 알아서 고릅니다.
 
 ## 대시보드
 
