@@ -1,0 +1,21 @@
+---
+paths:
+  - "kis/api_ingest.py"
+  - "kis/financials_api.py"
+  - "kis/etl.py"
+  - "kis/transform.py"
+  - "kis/compute.py"
+  - "kis/db.py"
+  - "kis/schema.sql"
+  - "kis/market.py"
+  - "kis/mcp_server.py"
+  - "kis/mock_*.py"
+---
+# Ingest, schema and metrics
+- `portfolio.db` has three tiers. Input: `raw_domestic` (executions), `raw_holdings` (balance: average price, quantity), `raw_realized` (realized P&L per period) — the broker's authoritative values, with corporate actions already applied by the KIS API
+- Derived, rebuilt by the ETL: `trades`, `holdings`, `realized`, `realized_events`, `holdings_changes`, `holdings_monthly`
+- Cache from yfinance, kept: `prices`, `fin` (financial ratios), `hist_daily`, `hist_monthly`, `splits`, `statements`
+- Call only the TR codes already verified in `api_ingest.py` and keep its probe gate: a wrong TR call can lock the account
+- `financials_api.py` takes statements from yfinance and accumulates them per period in `statements`, keeping periods yfinance has since dropped: deleting that cache loses statements older than four years for good
+- Every metric is computed in `compute.py`
+- MCP tools: `get_summary`, `get_holdings`, `get_performance`, `get_closed_positions`, `get_trades`, `get_financial_statements`, `query_db` (read-only SQL), `update_portfolio`
